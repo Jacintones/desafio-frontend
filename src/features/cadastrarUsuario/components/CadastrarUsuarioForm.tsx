@@ -15,6 +15,23 @@ import {
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1"
 import { useCriarUsuario } from "../hook/useCriarUsuario"
 
+const inputPropsNome = {
+  'data-testid': 'input-nome',
+};
+const inputPropsSobrenome = {
+  'data-testid': 'input-sobrenome',
+};
+const inputPropsCpf = {
+  'data-testid': 'input-cpf',
+  maxLength: 14, 
+};
+const inputPropsSenha = {
+  'data-testid': 'input-senha',
+};
+const inputPropsRole = {
+  'data-testid': 'input-role',
+};
+
 export default function CadastroUsuarioForm() {
   const { criarUsuario, loading, error } = useCriarUsuario()
 
@@ -88,16 +105,23 @@ export default function CadastroUsuarioForm() {
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
-            margin="normal"
             label="Nome"
-            variant="outlined"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             fullWidth
             required
+            slotProps={{
+              input: {
+                inputProps: {
+                  'data-testid': 'input-nome',
+                },
+              },
+            }}
           />
 
+
           <TextField
+            id="sobrenomeCadastro"
             margin="normal"
             label="Sobrenome"
             variant="outlined"
@@ -105,9 +129,17 @@ export default function CadastroUsuarioForm() {
             onChange={(e) => setSobrenome(e.target.value)}
             fullWidth
             required
+            slotProps={{
+              input: {
+                inputProps: {
+                  'data-testid': 'input-sobrenome',
+                },
+              },
+            }}
           />
 
           <TextField
+            id="cpfCadastro"
             margin="normal"
             label="CPF"
             variant="outlined"
@@ -115,12 +147,18 @@ export default function CadastroUsuarioForm() {
             onChange={(e) => setCpf(mascaraCPF(e.target.value))}
             fullWidth
             required
-            inputProps={{
-              maxLength: 14,
+            slotProps={{
+              input: {
+                inputProps: {
+                  maxLength: 14,
+                  'data-testid': 'input-cpf',
+                },
+              },
             }}
           />
 
           <TextField
+            id="senhaCadastro"
             margin="normal"
             label="Senha"
             type="password"
@@ -129,9 +167,17 @@ export default function CadastroUsuarioForm() {
             onChange={(e) => setSenha(e.target.value)}
             fullWidth
             required
+            slotProps={{
+              input: {
+                inputProps: {
+                  'data-testid': 'input-senha',
+                },
+              },
+            }}
           />
 
           <TextField
+            id="roleCadastro"
             margin="normal"
             label="Perfil (Role)"
             select
@@ -139,7 +185,15 @@ export default function CadastroUsuarioForm() {
             onChange={(e) => setRole(e.target.value)}
             fullWidth
             required
+            slotProps={{
+              input: {
+                inputProps: {
+                  'data-testid': 'input-role',
+                },
+              },
+            }}
           >
+
             <MenuItem value="ADMIN">Admin</MenuItem>
             <MenuItem value="USER">Usuário</MenuItem>
           </TextField>

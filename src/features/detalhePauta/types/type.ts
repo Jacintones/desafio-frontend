@@ -35,3 +35,8 @@ export interface VotacaoRequest {
     cpf: string;
     opcao: string;
 }
+
+export interface ResultadoVotacaoResponse {
+  votosSim: number
+  votosNao: number
+}

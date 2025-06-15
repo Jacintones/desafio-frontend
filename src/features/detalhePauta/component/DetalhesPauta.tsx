@@ -22,19 +22,18 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime"
 import InfoIcon from "@mui/icons-material/Info"
 import DescriptionIcon from "@mui/icons-material/Description"
 import { usePautaDetails } from "../hook/useDetalhePauta"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { abrirSessao } from "../service/abrirSessaoService"
 import { useVotar } from "../hook/useVotar"
 import { useAuth } from "@/hooks/useAuth"
-
-type PautaStatus = "ABERTA" | "ENCERRADA" | "NAO_ABERTA"
+import { ResultadoVotacaoResponse } from "../types/type"
 
 export default function DetalhesPauta() {
   const params = useParams()
   const pautaId = params?.id as string
 
   const { data, loading, error } = usePautaDetails(pautaId)
-  const user = useAuth();
+  const user = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [votoModalOpen, setVotoModalOpen] = useState(false)
   const [duracao, setDuracao] = useState<number | undefined>()
@@ -43,10 +42,27 @@ export default function DetalhesPauta() {
   const [votoUsuario, setVotoUsuario] = useState<"SIM" | "NAO" | null>(null)
   const [mensagemVoto, setMensagemVoto] = useState<string | null>(null)
 
+  const [resultado, setResultado] = useState<ResultadoVotacaoResponse | null>(null)
+  const [carregandoResultado, setCarregandoResultado] = useState(false)
+
   const { votarNaPauta, isLoading: votando, error: votarError } = useVotar()
 
   const formatDate = (dateString: Date | string | null | undefined) =>
     dateString ? new Date(dateString).toLocaleString("pt-BR") : "—"
+
+  const agora = new Date()
+
+  const podeVotar = () => {
+    const inicio = data?.dataAbertura ? new Date(data.dataAbertura) : null
+    const fim = data?.dataFechamento ? new Date(data.dataFechamento) : null
+    return (
+      inicio &&
+      fim &&
+      agora >= inicio &&
+      agora <= fim &&
+      !votoUsuario
+    )
+  }
 
   const handleAbrirSessao = async () => {
     setErroAbertura(null)
@@ -79,6 +95,17 @@ export default function DetalhesPauta() {
       setMensagemVoto("Erro ao registrar o voto.")
     }
   }
+
+  useEffect(() => {
+    const fim = data?.dataFechamento ? new Date(data.dataFechamento) : null
+    if (fim && agora > fim) {
+      setCarregandoResultado(true)
+      getResultadoVotacao(pautaId)
+        .then(setResultado)
+        .catch(() => setResultado(null))
+        .finally(() => setCarregandoResultado(false))
+    }
+  }, [data])
 
   return (
     <Container maxWidth="md" sx={{ mt: 6 }}>
@@ -154,14 +181,42 @@ export default function DetalhesPauta() {
               </Stack>
             </Box>
 
+            {data.dataFechamento && new Date(data.dataFechamento) < agora && (
+              <Box>
+                <Typography variant="h6" mt={2}>
+                  Resultado da Votação
+                </Typography>
+                {carregandoResultado ? (
+                  <Box display="flex" alignItems="center" mt={1}>
+                    <CircularProgress size={20} />
+                    <Typography ml={2}>Carregando resultado...</Typography>
+                  </Box>
+                ) : resultado ? (
+                  <Stack direction="row" spacing={2} mt={1}>
+                    <Chip label={`Sim: ${resultado.votosSim}`} color="success" />
+                    <Chip label={`Não: ${resultado.votosNao}`} color="error" />
+                  </Stack>
+                ) : (
+                  <Alert severity="error" sx={{ mt: 1 }}>
+                    Erro ao carregar resultado da votação.
+                  </Alert>
+                )}
+              </Box>
+            )}
+
             {data.status === "NAO_ABERTA" && (
               <Button variant="contained" onClick={() => setModalOpen(true)}>
                 Abrir Sessão de Votação
               </Button>
             )}
 
-            {data.status === "ABERTA" && !votoUsuario && (
-              <Button variant="contained" color="secondary" sx={{ maxWidth: 250}} onClick={() => setVotoModalOpen(true)}>
+            {podeVotar() && (
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ maxWidth: 250 }}
+                onClick={() => setVotoModalOpen(true)}
+              >
                 Votar
               </Button>
             )}
@@ -175,6 +230,7 @@ export default function DetalhesPauta() {
         </Paper>
       )}
 
+      {/* Modal Abrir Sessão */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
         <DialogTitle>Abrir Sessão de Votação</DialogTitle>
         <DialogContent>
@@ -184,14 +240,9 @@ export default function DetalhesPauta() {
               label="Duração da sessão (min)"
               value={duracao ?? ""}
               onChange={(e) => setDuracao(Number(e.target.value))}
-              slotProps={{
-                input: {
-                  inputProps: { min: 1 },
-                },
-              }}
+              inputProps={{ min: 1 }}
               sx={{ maxWidth: 300 }}
             />
-
             {erroAbertura && <Alert severity="error">{erroAbertura}</Alert>}
           </Stack>
         </DialogContent>

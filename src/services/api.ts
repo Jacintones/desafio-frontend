@@ -24,7 +24,8 @@ export async function apiFetch<T = any>(
     }
 
     const errorBody = isJson ? await res.json().catch(() => ({})) : {};
-    const message = (errorBody as any)?.message || "Erro desconhecido";
+    console.log("error no body: ", errorBody);
+    const message = (errorBody as any)?.error || "Erro desconhecido";
 
     const error = new Error(message);
     (error as any).statusCode = res.status;

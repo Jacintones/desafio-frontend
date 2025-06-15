@@ -27,6 +27,7 @@ import { abrirSessao } from "../service/abrirSessaoService"
 import { useVotar } from "../hook/useVotar"
 import { useAuth } from "@/hooks/useAuth"
 import { ResultadoVotacaoResponse } from "../types/type"
+import { getResultadoVotacao } from "../service/getResultadoVotacaoService"
 
 export default function DetalhesPauta() {
   const params = useParams()

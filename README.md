@@ -16,6 +16,7 @@ Este é o frontend do sistema de votação de uma cooperativa, desenvolvido em *
 - 🧠 **React 19**
 - ⚡ **Next.js 15.3.3**
 - 🎨 **Material UI (MUI 7)**
+- ✅ **Jest** + **React Testing Library** (para testes unitários)
 
 ## 📦 Instalação e Execução
 
